@@ -1,0 +1,104 @@
+El error que tenemos es:
+
+adriana@debian-mint ~/Documents/Dropbox/AsusLMDE/realtimeLMinGRT/build $ make
+Scanning dependencies of target mainAll
+[ 33%] Building CXX object CMakeFiles/mainAll.dir/home/adriana/Documents/Dropbox/AsusLMDE/realtimeLMinGRT/code/mainLM.cpp.o
+In file included from /home/adriana/Documents/grt/GRT/Util/GRTCommon.h:50:0,
+                 from /home/adriana/Documents/grt/GRT/GRT.h:51,
+                 from /home/adriana/Documents/Dropbox/AsusLMDE/realtimeLMinGRT/code/mainLM.cpp:21:
+/home/adriana/Documents/grt/GRT/Util/GRTTypedefs.h:31:16: error: expected unqualified-id before numeric constant
+     #define PI 3.14159265358979323846264338327950288
+                ^
+/home/adriana/Documents/Dropbox/AsusLMDE/realtimeLMinGRT/build/../include/LeapMath.h:24:20: note: in expansion of macro ‘PI’
+ static const float PI          = 3.1415926536f;
+                    ^
+make[2]: *** [CMakeFiles/mainAll.dir/home/adriana/Documents/Dropbox/AsusLMDE/realtimeLMinGRT/code/mainLM.cpp.o] Error 1
+make[1]: *** [CMakeFiles/mainAll.dir/all] Error 2
+make: *** [all] Error 2
+
+
+
+
+es decir, LM library y GRT Library definen de distinta forma a PI
+
+Como en LeapMath.h  casi no utilizo PI, me metí a /include/LeapMath.h y modifiqué
+
+		static const float PI          = 3.1415926536f;
+
+por:
+
+		#define PI 3.14159265358979323846264338327950288
+
+(comenté las líneas)
+
+ésto solucionó el problema del PI
+
+*****************************************************************************************
+
+Ahora, el problema, en líneas de mainLM.cpp
+
+	//Along with some other results such as the F-Measure, Precision and Recall
+	double fMeasure = pipeline.getTestFMeasure();		//Revisar esto.. dice q no se puede coinvertir
+	double precision = pipeline.getTestPrecision();
+	double recall = pipeline.getTestRecall();
+
+el compilador arroja:
+
+adriana@debian-mint ~/Documents/Dropbox/AsusLMDE/realtimeLMinGRT/build $ make
+Scanning dependencies of target mainAll
+[ 33%] Building CXX object CMakeFiles/mainAll.dir/home/adriana/Documents/Dropbox/AsusLMDE/realtimeLMinGRT/code/mainLM.cpp.o
+/home/adriana/Documents/Dropbox/AsusLMDE/realtimeLMinGRT/code/mainLM.cpp: In function ‘int main()’:
+/home/adriana/Documents/Dropbox/AsusLMDE/realtimeLMinGRT/code/mainLM.cpp:164:45: error: cannot convert ‘GRT::VectorDouble {aka std::vector<double>}’ to ‘double’ in initialization
+  double fMeasure = pipeline.getTestFMeasure();
+                                             ^
+/home/adriana/Documents/Dropbox/AsusLMDE/realtimeLMinGRT/code/mainLM.cpp:165:47: error: cannot convert ‘GRT::VectorDouble {aka std::vector<double>}’ to ‘double’ in initialization
+  double precision = pipeline.getTestPrecision();
+                                               ^
+/home/adriana/Documents/Dropbox/AsusLMDE/realtimeLMinGRT/code/mainLM.cpp:166:41: error: cannot convert ‘GRT::VectorDouble {aka std::vector<double>}’ to ‘double’ in initialization
+  double recall = pipeline.getTestRecall();
+                                         ^
+make[2]: *** [CMakeFiles/mainAll.dir/home/adriana/Documents/Dropbox/AsusLMDE/realtimeLMinGRT/code/mainLM.cpp.o] Error 1
+make[1]: *** [CMakeFiles/mainAll.dir/all] Error 2
+make: *** [all] Error 2
+
+
+en éste momento sólo comento para continuar
+
+*****************************************************************************************
+Ejecuto y hay error:
+adriana@debian-mint ~/Documents/Dropbox/AsusLMDE/realtimeLMinGRT/build $ ./mainAll 
+Loading dataset...
+Data Loaded!
+DatasetName:	NOT_SET
+DatasetInfo:	
+Number of Dimensions:	4
+Number of Samples:	105
+Number of Classes:	2
+ClassStats:
+ClassLabel:	1	Number of Samples:	89	ClassName:	NOT_SET
+ClassLabel:	2	Number of Samples:	16	ClassName:	NOT_SET
+Dataset Ranges:
+[1] Min:	31.722	Max: 84.4332
+[2] Min:	9.55765	Max: 100.383
+[3] Min:	16.0026	Max: 73.2542
+[4] Min:	12.3846	Max: 53.9747
+Splitting data into training/test split...
+Training model...
+[ERROR MovingAverageFilter] process(const VectorDouble &inputVector) - The size of the inputVector (4) does not match that of the filter (1)!
+[ERROR GRP] train(ClassificationData trainingData) - Failed to PreProcess Training Data. PreProcessingModuleIndex: 0
+ERROR: Failed to train the pipeline!
+
+El problema está en líneas:
+
+	//Add a moving average filter (with a buffer size of 5 and for a 1 dimensional signal) as a pre-processing module
+	pipeline.addPreProcessingModule( MovingAverageFilter(5,1) );
+	...
+
+	//Add a class label timeout filter to the end of the pipeline (with a timeout value of 1 second),
+	//this will filter the predicted class output from the ANBC algorithm
+	pipeline.addPostProcessingModule( ClassLabelTimeoutFilter(1000) );
+
+Como todavía no estoy muy segura de cómo funcionan... por ahora lo comento.
+Tras esto, compilo, ejecuto y con los datos entrenados, se pone a leer desde LM y reconoce!!!!! yeiiii
+
+*****************************************************************************************
