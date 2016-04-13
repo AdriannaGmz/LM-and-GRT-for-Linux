@@ -1,16 +1,17 @@
 ************************************************************************************************
-Para compilar y ejecutar,
-	Compilando. Desde /build
+To Compile and Execute,
+	Compiling. from /build
 		cmake	CMakeLists.txt
 		make
-	Correr el leapd:
+	Running the leapd service:
 		$	LeapControlPanel
-		$	sudo leapd           o   $ sudo service leapd restart
-	Ejecutando. Desde /build
+		$	sudo leapd           or   $ sudo service leapd restart
+	Executing from /build
 		./mainAll
 
 ************************************************************************************************
-Notas de 1a versión:
+About this version:
 
-Sobre el gesto, es una clasificación simple binaria que determina si los dedos de la mano están juntos entre sí, o están separados uno de otro.
-En éste proyecto buscaré la forma de clasificar datos en vivo recibidos de LM y ya entrenados anteriormente a través del archivo dataFromLM.csv
+About the gesture,
+It is a simple binary classification that determines whether all the fingers of the hand are together (and extended) or if they're separated one from each other.
+In this proyect, I'll look for the way of classifying the data received alive from LM and previously trained through the file archivo dataFromLM.csv
