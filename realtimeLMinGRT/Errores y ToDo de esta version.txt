@@ -1,6 +1,6 @@
-El error que tenemos es:
+Some present errors and the way I solved them:
 
-adriana@debian-mint ~/Documents/Dropbox/AsusLMDE/realtimeLMinGRT/build $ make
+/realtimeLMinGRT/build $ make
 Scanning dependencies of target mainAll
 [ 33%] Building CXX object CMakeFiles/mainAll.dir/home/adriana/Documents/Dropbox/AsusLMDE/realtimeLMinGRT/code/mainLM.cpp.o
 In file included from /home/adriana/Documents/grt/GRT/Util/GRTCommon.h:50:0,
@@ -16,57 +16,50 @@ make[2]: *** [CMakeFiles/mainAll.dir/home/adriana/Documents/Dropbox/AsusLMDE/rea
 make[1]: *** [CMakeFiles/mainAll.dir/all] Error 2
 make: *** [all] Error 2
 
+That is because   LM library and GRT Library define in a different way the number PI
 
-
-
-es decir, LM library y GRT Library definen de distinta forma a PI
-
-Como en LeapMath.h  casi no utilizo PI, me metí a /include/LeapMath.h y modifiqué
+Since  LeapMath.h is not used in this application, in /include/LeapMath.h  I modified
 
 		static const float PI          = 3.1415926536f;
 
-por:
+and instead:
 
 		#define PI 3.14159265358979323846264338327950288
 
-(comenté las líneas)
+commented lines.
 
-ésto solucionó el problema del PI
 
 *****************************************************************************************
 
-Ahora, el problema, en líneas de mainLM.cpp
+in mainLM.cpp
 
 	//Along with some other results such as the F-Measure, Precision and Recall
-	double fMeasure = pipeline.getTestFMeasure();		//Revisar esto.. dice q no se puede coinvertir
+	double fMeasure = pipeline.getTestFMeasure();		//it says it can not convert
 	double precision = pipeline.getTestPrecision();
 	double recall = pipeline.getTestRecall();
 
-el compilador arroja:
+the compiler throws:
 
-adriana@debian-mint ~/Documents/Dropbox/AsusLMDE/realtimeLMinGRT/build $ make
+realtimeLMinGRT/build $ make
 Scanning dependencies of target mainAll
-[ 33%] Building CXX object CMakeFiles/mainAll.dir/home/adriana/Documents/Dropbox/AsusLMDE/realtimeLMinGRT/code/mainLM.cpp.o
-/home/adriana/Documents/Dropbox/AsusLMDE/realtimeLMinGRT/code/mainLM.cpp: In function ‘int main()’:
-/home/adriana/Documents/Dropbox/AsusLMDE/realtimeLMinGRT/code/mainLM.cpp:164:45: error: cannot convert ‘GRT::VectorDouble {aka std::vector<double>}’ to ‘double’ in initialization
+/realtimeLMinGRT/code/mainLM.cpp:164:45: error: cannot convert ‘GRT::VectorDouble {aka std::vector<double>}’ to ‘double’ in initialization
   double fMeasure = pipeline.getTestFMeasure();
                                              ^
-/home/adriana/Documents/Dropbox/AsusLMDE/realtimeLMinGRT/code/mainLM.cpp:165:47: error: cannot convert ‘GRT::VectorDouble {aka std::vector<double>}’ to ‘double’ in initialization
+realtimeLMinGRT/code/mainLM.cpp:165:47: error: cannot convert ‘GRT::VectorDouble {aka std::vector<double>}’ to ‘double’ in initialization
   double precision = pipeline.getTestPrecision();
                                                ^
-/home/adriana/Documents/Dropbox/AsusLMDE/realtimeLMinGRT/code/mainLM.cpp:166:41: error: cannot convert ‘GRT::VectorDouble {aka std::vector<double>}’ to ‘double’ in initialization
+realtimeLMinGRT/code/mainLM.cpp:166:41: error: cannot convert ‘GRT::VectorDouble {aka std::vector<double>}’ to ‘double’ in initialization
   double recall = pipeline.getTestRecall();
                                          ^
 make[2]: *** [CMakeFiles/mainAll.dir/home/adriana/Documents/Dropbox/AsusLMDE/realtimeLMinGRT/code/mainLM.cpp.o] Error 1
 make[1]: *** [CMakeFiles/mainAll.dir/all] Error 2
 make: *** [all] Error 2
 
-
-en éste momento sólo comento para continuar
+So I don't use them by now
 
 *****************************************************************************************
-Ejecuto y hay error:
-adriana@debian-mint ~/Documents/Dropbox/AsusLMDE/realtimeLMinGRT/build $ ./mainAll 
+Now, error shows>
+/realtimeLMinGRT/build $ ./mainAll 
 Loading dataset...
 Data Loaded!
 DatasetName:	NOT_SET
@@ -88,7 +81,7 @@ Training model...
 [ERROR GRP] train(ClassificationData trainingData) - Failed to PreProcess Training Data. PreProcessingModuleIndex: 0
 ERROR: Failed to train the pipeline!
 
-El problema está en líneas:
+Problem is in lines
 
 	//Add a moving average filter (with a buffer size of 5 and for a 1 dimensional signal) as a pre-processing module
 	pipeline.addPreProcessingModule( MovingAverageFilter(5,1) );
@@ -98,7 +91,8 @@ El problema está en líneas:
 	//this will filter the predicted class output from the ANBC algorithm
 	pipeline.addPostProcessingModule( ClassLabelTimeoutFilter(1000) );
 
-Como todavía no estoy muy segura de cómo funcionan... por ahora lo comento.
-Tras esto, compilo, ejecuto y con los datos entrenados, se pone a leer desde LM y reconoce!!!!! yeiiii
+Commented by now.
+
+After this, project is reading data and classifying
 
 *****************************************************************************************
